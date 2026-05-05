@@ -1,3 +1,28 @@
+<!-- ruflo:start -->
+# Ruflo — Unified AI Agent Monolith
+
+**Migration Status: ✅ COMPLETE (2026-05-05)**
+
+All OpenSpace modules have been consolidated into **Ruflo** as the primary interface. The unified monolith provides:
+
+- **ruflo.core.engine** — Main OpenSpace execution engine
+- **ruflo.agents** — Reasoning loop (GroundingAgent, message management)
+- **ruflo.grounding** — Tool execution backends (MCP, Shell, GUI)
+- **ruflo.skill_engine** — Skill lifecycle (store, registry, evolution)
+- **ruflo.recording** — Execution trajectory capture
+- **ruflo.llm** — Model routing and cost tracking
+- **ruflo.config** — Configuration management
+- **ruflo.utils** — Logging, display utilities
+- **ruflo.local_server** — Health probes and status
+- **ruflo.dashboard_server** — REST API for skills, workflows, costs
+- **ruflo.mcp_server** — Claude Code integration
+
+**Backward Compatibility:** `openspace/` re-exports remain functional via lazy-import compat-shims.
+
+📖 See [`MIGRATION.md`](MIGRATION.md) and [`RUFLO_ARCHITECTURE.md`](RUFLO_ARCHITECTURE.md) for details.
+
+---
+
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 

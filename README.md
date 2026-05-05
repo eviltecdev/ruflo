@@ -23,6 +23,20 @@
 
 ---
 
+> [!IMPORTANT]
+> **🚀 Ruflo Migration Complete** (2026-05-05)
+> 
+> OpenSpace has been migrated to **Ruflo** as a unified monolith. All modules are now under `ruflo/` with backward-compatible re-exports in `openspace/`.
+> 
+> **No breaking changes.** Both import paths work:
+> - New (recommended): `from ruflo.agents import GroundingAgent`
+> - Old (still works): `from openspace.agents import GroundingAgent`
+> 
+> 📖 **Migration Guide**: See [`MIGRATION.md`](MIGRATION.md) for details.  
+> 🏗️ **New Architecture**: See [`RUFLO_ARCHITECTURE.md`](RUFLO_ARCHITECTURE.md) for structure overview.
+
+---
+
 ## 📢 News
 
 - **2026-04-09** 💬 Multi-channel **communication gateway**. OpenSpace can now receive and respond to messages from external platforms. Ships with **WhatsApp** (Baileys bridge + QR auth) and **Feishu** (HTTP webhook) adapters, session management, attachment caching, and allowlist-based access control. See [`openspace/config/README.md`](openspace/config/README.md) for setup.
@@ -159,8 +173,15 @@ On 50 professional tasks (**📈 [GDPVal Economic Benchmark](#-benchmark-gdpval)
 ```bash
 git clone https://github.com/HKUDS/OpenSpace.git && cd OpenSpace
 pip install -e .
-openspace-mcp --help   # verify installation
+python3 -m ruflo --help   # verify installation (primary interface)
+# or: openspace-mcp --help (legacy, still works)
 ```
+
+**✨ Ruflo** is now the primary interface. All functionality from OpenSpace is available via:
+- `python3 -m ruflo` (CLI)
+- `from ruflo import OpenSpace` (Python API)
+- `/api/v1/*` endpoints (HTTP)
+- `mcp__openspace__*` tools (MCP)
 
 > [!TIP]
 > **Slow clone?** The `assets/` folder (~50 MB of images) makes the default clone large. Use this lightweight alternative to skip it:
