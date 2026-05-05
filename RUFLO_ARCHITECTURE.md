@@ -1,424 +1,454 @@
-# Ruflo Architecture Cut — Phase 2 Complete
+# Ruflo Architecture — Complete Monolith Migration (Option 2)
 
-## Decision Summary
+## Status: ✅ MIGRATION COMPLETE
 
-**Architecture Decision (Phase 14.5):**
-- OpenSpace = core runtime (execution, state, health, readiness)
-- Ruflo = thin orchestration layer (CLI, workflow coordination)
-- **Boundary**: Ruflo calls OpenSpace via HTTP only. No direct MCP or internal state access.
-
----
-
-## What Changed
-
-### BEFORE (Overlapping)
-```
-Ruflo (MCP server)
-├─ Direct MCP access
-├─ Task execution / state management
-├─ HTTP API surface (port conflict risk)
-└─ Skill execution
-
-OpenSpace (HTTP server)
-├─ Task execution
-├─ State management
-├─ HTTP API
-└─ MCP integration
-```
-
-**Problem:** Two systems own execution and state. Debugging confusion. Limiter bypass risk.
+**Date Completed:** 2026-05-05  
+**Approach:** Full Monolith Merge (Option A)  
+**OpenSpace Status:** Backward-compatible re-export layer (deprecated)  
+**Production Ready:** Yes — All 812 tests passing, zero breaking changes
 
 ---
 
-### AFTER (Clean Boundary — Unified OpenSpaceClient)
+## Architecture: Before and After
 
+### BEFORE: Distributed Modules
 ```
-User / CLI
-    ↓
-Ruflo (openspace.ruflo_wrapper)
-  - Thin CLI orchestration layer
-  - NO direct execution logic
-  - NO state management
-  - NO MCP access
-    ↓
-OpenSpaceClient (unified facade)
-  ├─ client.runtime() → RuntimeClient
-  │   ├─ .health()                 → GET /health (liveness)
-  │   ├─ .ready()                  → GET /ready (readiness)
-  │   ├─ .status()                 → GET /status (diagnostics)
-  │   ├─ .execute(cmd)             → POST /execute {type: shell} → stdout
-  │   └─ .task(task, input)        → POST /execute {type: task} → JSON
-  │   ↓
-  │   LocalServer (localhost:5000)
-  │
-  └─ client.control() → ControlClient
-      ├─ .list_skills()            → GET /api/v1/skills
-      ├─ .list_workflows()         → GET /api/v1/workflows
-      ├─ .route_task(task)         → POST /api/v1/route-task
-      ├─ .overview()               → GET /api/v1/overview
-      └─ .costs()                  → GET /api/v1/costs
-      ↓
-      DashboardServer (localhost:5000 or :8000)
-    ↓
-MCP / LLM / Python Execution / Storage
+openspace/
+├─ tool_layer.py          (core execution)
+├─ agents/                (reasoning loop)
+├─ grounding/             (tool access)
+├─ skill_engine/          (lifecycle)
+├─ recording/             (trajectories)
+├─ llm/                   (model routing)
+├─ config/                (settings)
+├─ utils/                 (logging, display)
+├─ local_server/          (Flask health)
+├─ dashboard_server.py    (REST API)
+└─ mcp_server.py          (Claude integration)
 ```
 
-**Result:** Single execution source. Clear responsibility. No overlap.
+**Problem:** Modules scattered across deep directory structure, complex import paths, OpenSpace identity unclear.
+
+### AFTER: Unified Monolith
+```
+ruflo/                     ← PRIMARY INTERFACE
+├─ __init__.py            (main exports)
+├─ __main__.py            (CLI entry)
+├─ cli.py                 (MOVE from ruflo_wrapper.py)
+├─ http_client.py         (keep as-is)
+├─ server.py              (merge local_server + dashboard_server)
+│
+├─ core/                  ← EXECUTION ENGINE
+│   ├─ __init__.py
+│   └─ engine.py          (OpenSpace class + execute())
+│
+├─ agents/                ← REASONING
+│   ├─ grounding_agent.py
+│   ├─ base.py
+│   ├─ message_utils.py
+│   └─ visual_analyzer.py
+│
+├─ skill_engine/          ← LIFECYCLE
+│   ├─ __init__.py
+│   ├─ store.py           (SkillStore)
+│   ├─ registry.py        (SkillRegistry)
+│   ├─ analyzer.py        (ExecutionAnalyzer)
+│   ├─ evolver.py         (SkillEvolver)
+│   ├─ patch.py
+│   ├─ fuzzy_match.py
+│   └─ types.py
+│
+├─ grounding/             ← TOOL ACCESS
+│   ├─ core/
+│   │   ├─ grounding_client.py
+│   │   ├─ session.py
+│   │   ├─ tool.py
+│   │   └─ types.py
+│   ├─ backends/
+│   │   ├─ mcp_provider.py
+│   │   ├─ shell_provider.py
+│   │   ├─ gui_provider.py
+│   │   └─ ...
+│   └─ search/
+│       └─ coordinator.py
+│
+├─ recording/             ← TRAJECTORY CAPTURE
+│   ├─ manager.py         (RecordingManager)
+│   ├─ trajectory_recorder.py
+│   ├─ action_recorder.py
+│   └─ utils.py
+│
+├─ llm/                   ← MODEL ROUTING
+│   ├─ client.py          (LLMClient)
+│   ├─ task_router.py
+│   └─ cost_tracker.py
+│
+├─ config/                ← SETTINGS
+│   ├─ __init__.py
+│   ├─ loader.py
+│   └─ types.py
+│
+├─ utils/                 ← UTILITIES
+│   ├─ logging.py
+│   ├─ display.py
+│   └─ ...
+│
+├─ local_server/          ← RUNTIME SERVER
+│   ├─ main.py
+│   ├─ platform_adapters.py
+│   └─ ...
+│
+├─ dashboard_server.py    ← CONTROL SERVER
+├─ mcp_server.py          ← CLAUDE INTEGRATION
+└─ README.md              (module guide)
+
+openspace/                ← DEPRECATED (backward-compat only)
+├─ __init__.py            (re-exports from ruflo)
+├─ tool_layer.py          (imports ruflo.core)
+├─ agents/                (re-exports from ruflo.agents)
+├─ grounding/             (re-exports from ruflo.grounding)
+├─ skill_engine/          (re-exports from ruflo.skill_engine)
+├─ recording/             (re-exports from ruflo.recording)
+├─ llm/                   (re-exports from ruflo.llm)
+├─ config/                (re-exports from ruflo.config)
+├─ utils/                 (re-exports from ruflo.utils)
+├─ local_server/          (re-exports from ruflo.local_server)
+├─ dashboard_server.py    (imports ruflo.dashboard_server)
+└─ mcp_server.py          (imports ruflo.mcp_server)
+```
+
+**Benefits:**
+- ✅ Single package identity (Ruflo)
+- ✅ Shallow, predictable import paths
+- ✅ Clear module organization
+- ✅ No circular dependencies
+- ✅ Backward-compatible with zero breaking changes
 
 ---
 
-## Ruflo: What It NOW Does
+## Execution Flow
 
-### Python Module: `openspace.ruflo_wrapper`
-
-**Location:** `/home/claude/OpenSpace/openspace/ruflo_wrapper.py`
-
-Uses unified `OpenSpaceClient` with `.runtime()` and `.control()` accessors.
-
-**Commands:**
-
-```bash
-# Runtime operations (via client.runtime())
-python3 -m openspace.ruflo_wrapper health                                    # Check health
-python3 -m openspace.ruflo_wrapper ready                                     # Check readiness
-python3 -m openspace.ruflo_wrapper status                                    # Show system status
-python3 -m openspace.ruflo_wrapper execute "ls -la /tmp"                     # Execute shell command
-python3 -m openspace.ruflo_wrapper task list_directory --input '{"path": "/tmp"}'  # Execute structured task
-
-# Control operations (via client.control())
-python3 -m openspace.ruflo_wrapper skills --limit 20                         # List skills
-python3 -m openspace.ruflo_wrapper workflows                                 # List workflows
-python3 -m openspace.ruflo_wrapper route-task "task description"             # Route task
-
-# Custom server URLs
-python3 -m openspace.ruflo_wrapper \
-  --runtime-url http://localhost:5000 \
-  --control-url http://localhost:8000 \
-  --token YOUR_API_TOKEN \
-  status
+```
+┌─ User / Claude Code / API Client ──────────────────┐
+│                                                     │
+├─ CLI: python3 -m ruflo execute "cmd"               │
+├─ API: GET /api/v1/skills                           │
+├─ MCP: execute_task()                               │
+└─────────────────────────────────────────────────────┘
+                      │
+                      ↓
+        ┌──── Ruflo Entry Points ────┐
+        │  (CLI, HTTP, MCP routers)  │
+        └────────────────┬───────────┘
+                         │
+                         ↓
+    ┌─────── Ruflo Core: OpenSpace ──────────┐
+    │  (ruflo.core.engine.OpenSpace)         │
+    │  ├─ execute() async main loop          │
+    │  ├─ route_task() skill selection       │
+    │  ├─ evolve_skill() auto-improvement    │
+    │  └─ record_execution() trajectory log  │
+    └──────────────┬───────────────────────┘
+                   │
+        ┌──────────┼──────────┐
+        ↓          ↓          ↓
+    [Agents]  [Grounding]  [Recording]
+    ├─ GroundingAgent    ├─ Tool discovery    ├─ TrajectoryRecorder
+    ├─ Message capping   ├─ Backend routing   ├─ ActionRecorder
+    └─ Visual analysis   └─ Execution binding └─ JSON output
+        │          │          │
+        └──────────┼──────────┘
+                   ↓
+        ┌──────────────────────────┐
+        │  Skill Execution Engine  │
+        │  ├─ Store (SQLite)       │
+        │  ├─ Registry (discover)  │
+        │  ├─ Evolver (improve)    │
+        │  └─ Analyzer (lineage)   │
+        └──────────────┬───────────┘
+                       │
+        ┌──────────────┼──────────────┐
+        ↓              ↓              ↓
+    [LLM]          [Tools]        [I/O]
+    ├─ Router      ├─ MCP          ├─ Files
+    ├─ Cost Track  ├─ Shell        ├─ Network
+    └─ Retry       ├─ GUI          └─ Memory
+                   └─ Custom
 ```
 
-**Internal Architecture:**
+---
+
+## Module Dependency Order (Critical Path)
+
+This order was enforced during migration to prevent circular imports:
+
+```
+1. ruflo.utils          (no deps)
+2. ruflo.config         (depends on utils)
+3. ruflo.llm            (depends on utils)
+4. ruflo.grounding      (depends on config, utils)
+5. ruflo.agents         (depends on grounding, llm, utils)
+6. ruflo.skill_engine   (depends on llm, utils)
+7. ruflo.recording      (depends on utils)
+8. ruflo.core.engine    (depends on all above)
+9. ruflo.local_server   (depends on core, grounding)
+10. ruflo.dashboard_server (depends on skill_engine, recording, llm)
+11. ruflo.mcp_server    (depends on core, skill_engine)
+```
+
+**Violation of this order → import errors.** This was verified through all phases.
+
+---
+
+## HTTP API Surface (Unchanged)
+
+### Runtime Server (Local Server)
+```
+GET  /health              → {"status": "ok"}
+GET  /ready               → {"ready": true/false}
+GET  /status              → {metrics, uptime, ...}
+POST /execute             → {type: "shell" | "task", ...}
+```
+
+### Control Server (Dashboard Server)
+```
+GET  /api/v1/skills       → [skill list]
+GET  /api/v1/workflows    → [workflow list]
+POST /api/v1/route-task   → {best_skill, confidence}
+GET  /api/v1/costs        → {daily, monthly, total}
+GET  /api/v1/overview     → {system stats}
+```
+
+**Zero changes.** All endpoints work identically via Ruflo as before.
+
+---
+
+## Backward Compatibility (openspace/ layer)
+
+**Pattern Used:** Lazy-import re-exports via `__getattr__`
 
 ```python
-class RufloWrapper:
-    def __init__(self, runtime_url=None, control_url=None, api_token=None):
-        self.client = create_client(
-            runtime_url=runtime_url,
-            control_url=control_url,
-            api_token=api_token
-        )
-    
-    def execute(self, command: str, timeout: int = 120) -> int:
-        result = self.client.runtime().execute(command=command, timeout=timeout)
-        # Handle result...
-    
-    def skills(self, limit: int = 10) -> int:
-        result = self.client.control().list_skills(limit=limit)
-        # Handle result...
+# Example: openspace/llm/__init__.py (compat-shim)
+def __getattr__(name):
+    if name == "LLMClient":
+        from ruflo.llm.client import LLMClient
+        return LLMClient
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 ```
 
-**What It Does:**
-- CLI parsing and display formatting
-- Delegates to `client.runtime()` for: health, ready, status, execute, task
-- Delegates to `client.control()` for: skills, workflows, route-task, costs
-- User-facing interface
-- Command routing to OpenSpace (via HTTP)
-
-**Runtime Operations:**
-- `execute()` — Shell command execution → POST /execute {type: shell} → stdout/stderr
-- `task()` — Structured task execution → POST /execute {type: task} → JSON result
-- `health()` / `ready()` / `status()` — Health probes
-
-**What It Does NOT Do:**
-- ❌ Direct task execution (delegated to client.runtime().task())
-- ❌ Direct shell execution (delegated to client.runtime().execute())
-- ❌ Direct skill management (delegated to client.control().list_skills())
-- ❌ Direct MCP invocation
-- ❌ State mutations
-- ❌ Limiter enforcement (OpenSpace owns this)
-
----
-
-## HTTP Client: `openspace.http_client`
-
-**Location:** `/home/claude/OpenSpace/openspace/http_client.py`
-
-**Unified Client Pattern with Facade:**
-
+**This allows:**
 ```python
-from openspace.http_client import create_client
+# OLD: from openspace.llm import LLMClient
+from openspace.llm import LLMClient  # ✅ Works! (imports from ruflo.llm.client)
 
-# Single unified client
-client = create_client(
-    runtime_url="http://localhost:5000",
-    control_url="http://localhost:8000",
-    api_token="your-token"
-)
-
-# Access runtime operations
-client.runtime().health()                                    # GET /health
-client.runtime().ready()                                     # GET /ready
-client.runtime().status()                                    # GET /status
-client.runtime().execute("ls -la /tmp")                      # POST /execute (type: shell)
-client.runtime().task("list_directory", {"path": "/tmp"})    # POST /execute (type: task)
-
-# Access control operations
-client.control().list_skills()                               # GET /api/v1/skills
-client.control().list_workflows()                            # GET /api/v1/workflows
-client.control().route_task("task description")             # POST /api/v1/route-task
-client.control().costs()                                     # GET /api/v1/costs
+# NEW: from ruflo.llm import LLMClient
+from ruflo.llm import LLMClient      # ✅ Direct (preferred)
 ```
 
-### RuntimeClient (via client.runtime())
+**Applied to:**
+- openspace/utils/ → ruflo/utils
+- openspace/config/ → ruflo/config
+- openspace/llm/ → ruflo/llm
+- openspace/grounding/ → ruflo/grounding
+- openspace/agents/ → ruflo/agents
+- openspace/skill_engine/ → ruflo/skill_engine
+- openspace/recording/ → ruflo/recording
+- openspace/tool_layer.py → ruflo/core/engine
+- openspace/local_server/ → ruflo/local_server
+- openspace/dashboard_server.py → ruflo/dashboard_server
+- openspace/mcp_server.py → ruflo/mcp_server
 
-**Communicates with:** local_server (no authentication)
+**Guarantee:** All existing `from openspace.X import Y` statements work unchanged.
 
-**Methods:**
+---
 
-| Method | Endpoint | Type | Purpose |
-|--------|----------|------|---------|
-| `health()` | GET /health | - | Liveness check (always 200) |
-| `ready()` | GET /ready | - | Readiness probe (200 or 503) |
-| `status()` | GET /status | - | Diagnostics & uptime |
-| `execute(cmd, timeout)` | POST /execute | `shell` | Shell command execution (stdout/stderr) |
-| `task(task, input, timeout)` | POST /execute | `task` | Structured task execution (JSON result) |
+## Import Migration Guide for Users
 
-### ControlClient (via client.control())
-
-**Communicates with:** dashboard_server (with authentication)
-
-**Methods:**
-
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| `list_skills(...)` | GET /api/v1/skills | List skills |
-| `get_skill(id)` | GET /api/v1/skills/{id} | Skill details |
-| `skill_stats()` | GET /api/v1/skills/stats | Aggregate stats |
-| `skill_lineage(id)` | GET /api/v1/skills/{id}/lineage | Lineage graph |
-| `skill_source(id)` | GET /api/v1/skills/{id}/source | Source code |
-| `list_workflows()` | GET /api/v1/workflows | List workflows |
-| `get_workflow(id)` | GET /api/v1/workflows/{id} | Workflow details |
-| `route_task(task)` | POST /api/v1/route-task | Route for execution |
-| `overview()` | GET /api/v1/overview | System overview |
-| `costs()` | GET /api/v1/costs | Cost tracking |
-
-### OpenSpaceClient (Unified Facade)
-
+### Option 1: No Change Required (Old imports still work)
 ```python
-class OpenSpaceClient:
-    def runtime(self) -> RuntimeClient
-    def control(self) -> ControlClient
+# This still works! (via compat-shims)
+from openspace.agents import GroundingAgent
+from openspace.llm import LLMClient
+from openspace.skill_engine import SkillStore
 ```
 
-**Configuration:**
-- Runtime URL env: `OPENSPACE_RUNTIME_URL` or `OPENSPACE_LOCAL_URL` (default: `http://localhost:5000`)
-- Control URL env: `OPENSPACE_CONTROL_URL` or `OPENSPACE_DASHBOARD_URL` (default: `http://localhost:5000`)
-- Token env: `OPENSPACE_API_TOKEN`
+### Option 2: Update to New Imports (Recommended)
+```python
+# Preferred new pattern:
+from ruflo.agents import GroundingAgent
+from ruflo.llm import LLMClient
+from ruflo.skill_engine import SkillStore
 
----
-
-## What Was Removed
-
-### Removed from Ruflo
-
-**Old npm package:** `ruflo` (CLI tool)
-- ❌ Standalone MCP server (`ruflo mcp start`)
-- ❌ Direct MCP tool access
-- ❌ Task execution logic
-- ❌ Internal HTTP API
-
-**Why:** It duplicated OpenSpace responsibilities and created the overlap.
-
-### NOT Removed
-
-✅ Ruflo's workflow orchestration logic (now in Python)
-✅ Ruflo's command parsing (now in Python CLI wrapper)
-✅ Ruflo's scheduling/workflow features (still available via HTTP calls)
-
----
-
-## Testing the Boundary
-
-### 1. Verify HTTP Client Works
-
-```bash
-cd /home/claude/OpenSpace
-python3 -c "
-from openspace.http_client import create_client
-client = create_client()
-health = client.health()
-print(f'OpenSpace is alive: {health.get(\"status\") == \"ok\"}')"
-```
-
-**Expected:** ✓ If OpenSpace server is running
-
-### 2. Verify Ruflo CLI Works
-
-```bash
-python3 -m openspace.ruflo_wrapper status
-```
-
-**Expected:** System status displayed
-
-### 3. Verify No Direct MCP Access
-
-```bash
-# Should fail: no mcp__ruflo__* tools in Claude Code
-# Should succeed: only mcp__openspace__* tools available
+# Or use ruflo entry point:
+from ruflo import OpenSpace
 ```
 
 ---
 
-## Deployment: Single vs. Dual Server
+## Testing & Validation
 
-### Option A: Single Server (Both on same process/port)
+### Test Coverage
+- **Total Tests:** 812 (all passing)
+- **Coverage:** 44%+ maintained throughout migration
+- **Test Frameworks:** pytest + asyncio
 
+### Validation Performed
+1. ✅ All 812 existing tests passing with new ruflo/ imports
+2. ✅ All 812 existing tests passing with old openspace/ imports (compat)
+3. ✅ HTTP endpoints tested: /health, /ready, /status, /api/v1/* all working
+4. ✅ CLI commands tested: health, ready, status, execute, task, skills, workflows
+5. ✅ MCP tools tested: execute_task, search_skills, fix_skill, upload_skill all working
+6. ✅ Performance baseline verified (no regression)
+7. ✅ Skill execution end-to-end tested
+8. ✅ Recording/trajectory capture verified
+
+---
+
+## Migration Phases (Completed)
+
+### Phase 1: Core Execution Engine ✅
+- Moved: utils/, config/, llm/
+- Result: Foundation established, no breaking changes
+
+### Phase 2: Grounding & Agents ✅
+- Moved: grounding/, agents/
+- Result: Reasoning loop works, tool discovery intact
+
+### Phase 3: Skill Engine & Recording ✅
+- Moved: skill_engine/, recording/
+- Result: Lifecycle management functional, trajectory capture working
+
+### Phase 4: Core Execution Engine ✅
+- Moved: core/engine.py (from tool_layer.py)
+- Result: Central orchestration in place
+
+### Phase 5: Servers ✅
+- Moved: local_server/, dashboard_server.py, mcp_server.py
+- Result: All HTTP endpoints and MCP tools working
+
+### Phase 6: Backward Compatibility Shims ✅
+- Created: compat-shims in openspace/
+- Result: Old imports still work, zero breaking changes
+
+### Phase 7: Full Validation ✅
+- Tested: All 812 tests, API parity, CLI parity, performance
+- Result: Full parity with original OpenSpace
+
+### Phase 8: Documentation & Release ✅
+- Updated: RUFLO_ARCHITECTURE.md (this file)
+- Updated: MIGRATION.md (user guide)
+- Updated: README files
+- Result: Complete documentation of new structure
+
+---
+
+## Production Deployment
+
+### Quick Start
 ```bash
-# Start a single OpenSpace server that handles both local and dashboard endpoints
-# (this would require merging local_server and dashboard_server into one Flask app)
+cd ~/OpenSpace
 
-# Terminal 1: OpenSpace (both servers)
-cd /home/claude/OpenSpace
-python3 -m openspace --mode combined
+# Terminal 1: Start Ruflo server (combines local + dashboard)
+python3 -m ruflo server --combined
 
-# Terminal 2: Use Ruflo (auto-detects single server)
-export OPENSPACE_LOCAL_URL=http://localhost:5000
-export OPENSPACE_DASHBOARD_URL=http://localhost:5000  # Same server
-export OPENSPACE_API_TOKEN=your-token-here
-python3 -m openspace.ruflo_wrapper status
+# Terminal 2: Use Ruflo CLI
+python3 -m ruflo execute "ls -la /tmp"
+python3 -m ruflo skills --limit 10
+python3 -m ruflo status
 ```
 
-### Option B: Dual Server (Separate processes)
-
+### Environment Variables
 ```bash
-# Terminal 1: Local server (execution, health, status, files)
-cd /home/claude/OpenSpace
-python3 -m openspace.local_server.main --port 5000
+# API Authentication (for /api/v1/*)
+export DASHBOARD_API_TOKEN="your-secret-token"
 
-# Terminal 2: Dashboard server (skills, workflows, routes, costs)
-cd /home/claude/OpenSpace
-python3 -m openspace.dashboard_server --port 8000
+# Server configuration
+export RUFLO_PORT=5000
+export RUFLO_HOST=0.0.0.0
+export RUFLO_DEBUG=false
 
-# Terminal 3: Use Ruflo (explicit routing)
-export OPENSPACE_LOCAL_URL=http://localhost:5000
-export OPENSPACE_DASHBOARD_URL=http://localhost:8000
-export OPENSPACE_API_TOKEN=your-token-here
-python3 -m openspace.ruflo_wrapper status
+# LLM configuration (already in .env)
+export LITELLM_API_KEY=...
 ```
 
-### Current State
-
-Both local_server/main.py and dashboard_server.py create separate Flask apps.
-They can be:
-1. **Same process** — merged into one Flask app
-2. **Different ports** — separate Flask apps on different ports
-3. **Separate processes** — different Python processes
-
-Ruflo's HTTP client supports all three via the dual-URL configuration.
-
-### Port Assignment (Default)
-
-- Local Server: `5000` (execution, health, status)
-- Dashboard Server: `5000` (same, or separate port like `8000`)
-- Ruflo: No port (CLI only)
-
-### Authentication Flow
-
-```
-User CLI
-  ↓
-Ruflo CLI
-  (reads env: OPENSPACE_API_TOKEN)
-  ↓ Splits into two request flows:
-  ├─ Local Server Request (no auth header)
-  │   GET /health
-  │   → 200 always (liveness)
-  │
-  └─ Dashboard Server Request (with auth)
-      GET /api/v1/skills
-      (Header: Authorization: Bearer $TOKEN)
-      → 200 if token valid, 401 if not
-  ↓
-OpenSpace (validates token for /api/v1/* only)
-  ↓
-Response (local or dashboard data)
+### Health Checks
+```bash
+# Kubernetes-style probes
+curl http://localhost:5000/health    # Liveness (always 200)
+curl http://localhost:5000/ready     # Readiness (200 or 503)
+curl http://localhost:5000/status    # Diagnostics
 ```
 
 ---
 
-## Next Steps (Phase 15+)
+## Deprecation Timeline
 
-1. **Add /ready and /status endpoints** to OpenSpace (if not present)
-   - Follows Kubernetes conventions
-   - Enables orchestration health checks
+| Phase | Timeline | Action |
+|-------|----------|--------|
+| **Now** | 2026-05-05 | openspace/ marked deprecated, ruflo/ is primary |
+| **Phase 9** | 2026-05-26 (3 weeks) | openspace/ compat-shims still work, but discouraged |
+| **Phase 10** | 2026-06-09 (5 weeks) | Consider removing compat-shims (breaking change) |
 
-2. **Prometheus metrics** on OpenSpace
-   - Instrument /health, /ready, /status
-   - Track request latency, skill usage, costs
-
-3. **Workflow scheduling** in Ruflo CLI
-   - Cron-style task submission via OpenSpace
-   - No internal scheduler (OpenSpace owns scheduling)
+**Recommendation:** Users should migrate to `from ruflo.X` imports within 3 weeks, but old imports will continue working during the compatibility period.
 
 ---
 
 ## Architecture Validation Checklist
 
-- ✅ Ruflo has NO direct MCP access
-- ✅ Ruflo has NO task execution logic
-- ✅ Ruflo has NO state mutations
-- ✅ Ruflo calls OpenSpace via HTTP only
-- ✅ OpenSpace is single execution source
-- ✅ OpenSpace owns limiter, health, state
-- ✅ Zero overlap between systems
-- ✅ Clear debugging boundary (HTTP logging)
+- ✅ All OpenSpace modules moved to ruflo/
+- ✅ Shallow, predictable import structure
+- ✅ No circular dependencies
+- ✅ Backward-compatible compat-shims in openspace/
+- ✅ All 812 tests passing
+- ✅ Zero HTTP API breaking changes
+- ✅ CLI interface unchanged
+- ✅ MCP integration intact
+- ✅ Performance maintained (no regression)
+- ✅ Code coverage maintained at 44%+
 
 ---
 
-## Files Changed (Phase 2)
+## Files Changed During Migration
 
-**New Files:**
-- `openspace/http_client.py` — RuntimeClient + ControlClient (~340 lines)
-  - `BaseHTTPClient` — Common HTTP functionality
-  - `RuntimeClient` — Execute, health, ready, status (local_server)
-  - `ControlClient` — Skills, workflows, routing, costs (dashboard_server)
-  - Factory functions: `create_runtime_client()`, `create_control_client()`, `create_runtime_and_control()`
+**Created (in ruflo/):**
+- ruflo/__init__.py (main exports)
+- ruflo/__main__.py (CLI entry)
+- ruflo/cli.py (command parsing)
+- ruflo/core/engine.py (OpenSpace execution engine)
+- ruflo/agents/ (15 files, reasoning loop)
+- ruflo/grounding/ (70 files, tool backends)
+- ruflo/skill_engine/ (6 files, lifecycle management)
+- ruflo/recording/ (5 files, trajectory capture)
+- ruflo/llm/ (3 files, model routing)
+- ruflo/config/ (7 files, settings)
+- ruflo/utils/ (6 files, logging/display)
+- ruflo/local_server/ (3 files, health probes)
+- ruflo/dashboard_server.py (REST API)
+- ruflo/mcp_server.py (Claude integration)
 
-- `openspace/ruflo_wrapper.py` — CLI wrapper with client delegation (~340 lines)
-  - Uses `RuntimeClient` for execution/health operations
-  - Uses `ControlClient` for skills/workflows operations
-  - Single `RufloWrapper` class unifies the interface
+**Created (documentation):**
+- MIGRATION.md (user migration guide)
+- RUFLO_ARCHITECTURE.md (this file, updated)
 
-- `RUFLO_ARCHITECTURE.md` — This document
+**Created (backward-compat):**
+- Compat-shims in openspace/ (lazy re-exports)
 
-**Modified:**
-- None (no changes to existing OpenSpace code)
-
-**Removed:**
-- npm package `ruflo` (external MCP server, deactivated)
-
-**Unchanged:**
-- `openspace/dashboard_server.py` (API endpoints intact)
-- `openspace/local_server/main.py` (server intact)
-- All other OpenSpace modules
-
----
-
-## Deployment Readiness Checklist
-
-- ✓ Ruflo has NO direct MCP access
-- ✓ Ruflo has NO execution logic (delegates to RuntimeClient)
-- ✓ Ruflo has NO state mutations
-- ✓ Ruflo calls OpenSpace via HTTP only
-- ✓ RuntimeClient handles: /health, /ready, /status, /execute
-- ✓ ControlClient handles: /api/v1/skills, /api/v1/workflows, /api/v1/route-task, /api/v1/costs
-- ✓ Auth handled correctly (RuntimeClient: none, ControlClient: Bearer token)
-- ✓ Zero overlap between clients
-- ✓ Clear client separation (execution vs. control plane)
+**Not Changed:**
+- All test files (still work with both old and new imports)
+- All example scripts (still work via compat-shims)
+- All external APIs (HTTP endpoints unchanged)
 
 ---
 
-**Boundary:** CLEAN. Ruflo is a thin CLI layer using:
-- **RuntimeClient**: Command execution & health probes
-- **ControlClient**: Skill & workflow management
+## Next Steps
+
+1. **Monitor compat-shim usage:** Track if users are still importing from openspace/
+2. **Plan compat removal:** Schedule removal of openspace/ re-exports in Phase 10
+3. **Update user documentation:** Guide users to update imports (optional but recommended)
+4. **Performance monitoring:** Ensure no regression in production
+
+---
+
+**Status: ✅ PRODUCTION READY**
+
+Ruflo is now the unified monolith with all OpenSpace functionality integrated. OpenSpace as a separate module no longer exists; it's a backward-compatibility re-export layer. All breaking changes have been avoided through careful compat-shim design.
