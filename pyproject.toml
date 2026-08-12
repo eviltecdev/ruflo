@@ -3,9 +3,9 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "openspace"
+name = "ruflo"
 version = "0.1.0"
-description = "OpenSpace"
+description = "Ruflo — Unified AI Agent Monolith"
 readme = "README.md"
 requires-python = ">=3.12"
 license = {text = "MIT"}
@@ -63,10 +63,10 @@ communication = [
 ]
 
 all = [
-    "openspace[macos]; sys_platform == 'darwin'",
-    "openspace[linux]; sys_platform == 'linux'",
-    "openspace[windows]; sys_platform == 'win32'",
-    "openspace[communication,dev]",
+    "ruflo[macos]; sys_platform == 'darwin'",
+    "ruflo[linux]; sys_platform == 'linux'",
+    "ruflo[windows]; sys_platform == 'win32'",
+    "ruflo[communication,dev]",
 ]
 
 [project.urls]
@@ -74,19 +74,19 @@ Repository = "https://github.com/HKUDS/OpenSpace"
 "Bug Tracker" = "https://github.com/HKUDS/OpenSpace/issues"
 
 [project.scripts]
-openspace = "openspace.__main__:run_main"
-openspace-server = "openspace.local_server.main:main"
-openspace-mcp = "openspace.mcp_server:run_mcp_server"
-openspace-download-skill = "openspace.cloud.cli.download_skill:main"
-openspace-upload-skill = "openspace.cloud.cli.upload_skill:main"
-openspace-dashboard = "openspace.dashboard_server:main"
-openspace-gateway = "openspace.communication.gateway:run_main"
+ruflo = "ruflo.__main__:main"
+ruflo-server = "ruflo.local_server.main:main"
+ruflo-mcp = "ruflo.mcp_server:run_mcp_server"
+ruflo-download-skill = "ruflo.cloud.cli.download_skill:main"
+ruflo-upload-skill = "ruflo.cloud.cli.upload_skill:main"
+ruflo-dashboard = "ruflo.dashboard_server:main"
+ruflo-gateway = "ruflo.communication.gateway:run_main"
 
 [tool.setuptools]
-packages = {find = {where = ["."], include = ["openspace*"]}}
+packages = {find = {where = ["."], include = ["ruflo*"]}}
 
 [tool.setuptools.package-data]
-openspace = [
+ruflo = [
     "config/*.json",
     "config/*.json.example",
     "communication/bridges/whatsapp/*",
