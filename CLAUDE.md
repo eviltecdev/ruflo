@@ -1,7 +1,7 @@
 <!-- ruflo:start -->
 # Ruflo — Unified AI Agent Monolith
 
-**Migration Status: ✅ COMPLETE (2026-05-05)**
+**Migration Status: ✅ COMPLETE (openspace/ removed 2026-08-12)**
 
 All OpenSpace modules have been consolidated into **Ruflo** as the primary interface. The unified monolith provides:
 
@@ -17,7 +17,7 @@ All OpenSpace modules have been consolidated into **Ruflo** as the primary inter
 - **ruflo.dashboard_server** — REST API for skills, workflows, costs
 - **ruflo.mcp_server** — Claude Code integration
 
-**Backward Compatibility:** `openspace/` re-exports remain functional via lazy-import compat-shims.
+**Namespace:** `ruflo` is the sole package. The legacy `openspace/` tree (deprecated shims + duplicated module bodies) was fully removed on 2026-08-12 — no `openspace` imports remain anywhere. Use `ruflo.*` and the `ruflo` / `ruflo-mcp` / `ruflo-dashboard` console scripts.
 
 📖 See [`MIGRATION.md`](MIGRATION.md) and [`RUFLO_ARCHITECTURE.md`](RUFLO_ARCHITECTURE.md) for details.
 
