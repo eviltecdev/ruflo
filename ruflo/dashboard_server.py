@@ -13,7 +13,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 from flask import Flask, abort, jsonify, request, send_from_directory, url_for, g
 
 from ruflo.recording.action_recorder import analyze_agent_actions, load_agent_actions
-from openspace.metrics.prometheus import (
+from ruflo.metrics.prometheus import (
     http_requests_total,
     http_request_duration_seconds,
     record_exception,

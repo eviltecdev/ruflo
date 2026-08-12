@@ -30,7 +30,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from openspace.metrics.prometheus import openspace_active_tasks
+from ruflo.metrics.prometheus import openspace_active_tasks
 
 # Request correlation ID for end-to-end tracing
 _request_id_var: contextvars.ContextVar[str] = contextvars.ContextVar(
@@ -200,8 +200,8 @@ async def _get_openspace():
             return _openspace_instance
 
         logger.info("Initializing OpenSpace engine ...")
-        from openspace.tool_layer import OpenSpace, OpenSpaceConfig
-        from openspace.host_detection import (
+        from ruflo.tool_layer import OpenSpace, OpenSpaceConfig
+        from ruflo.host_detection import (
             build_grounding_config_path,
             build_llm_kwargs,
             load_runtime_env,
@@ -341,8 +341,8 @@ def _get_local_skill_registry():
 
 def _get_cloud_client():
     """Get a OpenSpaceClient instance (raises CloudError if not configured)."""
-    from openspace.cloud.auth import get_openspace_auth
-    from openspace.cloud.client import OpenSpaceClient
+    from ruflo.cloud.auth import get_openspace_auth
+    from ruflo.cloud.client import OpenSpaceClient
     auth_headers, api_base = get_openspace_auth()
     return OpenSpaceClient(auth_headers, api_base)
 
@@ -825,7 +825,7 @@ async def search_skills(
         )
 
     try:
-        from openspace.cloud.search import hybrid_search_skills
+        from ruflo.cloud.search import hybrid_search_skills
 
         q = query.strip()
         if not q:

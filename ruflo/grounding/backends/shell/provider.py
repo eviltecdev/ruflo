@@ -5,7 +5,7 @@ from .transport.connector import ShellConnector
 from .transport.local_connector import LocalShellConnector
 from ruflo.config import get_config
 from ruflo.config.utils import get_config_value
-from openspace.platforms.config import get_local_server_config
+from ruflo.platforms.config import get_local_server_config
 from ruflo.utils.logging import Logger
 
 logger = Logger.get_logger(__name__)

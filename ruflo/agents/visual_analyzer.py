@@ -4,8 +4,8 @@ import json
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from ruflo.grounding.core.types import ToolResult
-from openspace.platforms.screenshot import ScreenshotClient
-from openspace.prompts import GroundingAgentPrompts
+from ruflo.platforms.screenshot import ScreenshotClient
+from ruflo.prompts import GroundingAgentPrompts
 from ruflo.utils.logging import Logger
 
 if TYPE_CHECKING:
@@ -154,7 +154,7 @@ class VisualAnalyzer:
                 )
             elif self._visual_analysis_model:
                 try:
-                    from openspace.host_detection import build_llm_kwargs
+                    from ruflo.host_detection import build_llm_kwargs
 
                     visual_model, _llm_extra = build_llm_kwargs(visual_model)
                 except Exception as e:

@@ -244,7 +244,7 @@ class BaseTool(ABC):
         
         # Record to recording manager (for trajectory recording)
         try:
-            from openspace.recording import RecordingManager
+            from ruflo.recording import RecordingManager
             
             if not RecordingManager.is_recording():
                 return

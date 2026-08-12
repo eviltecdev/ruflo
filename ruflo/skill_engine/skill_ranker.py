@@ -241,7 +241,7 @@ class SkillRanker:
     @staticmethod
     def _get_openai_api_key() -> Optional[str]:
         """Resolve OpenAI-compatible API key for embedding requests."""
-        from openspace.cloud.embedding import resolve_embedding_api
+        from ruflo.cloud.embedding import resolve_embedding_api
         api_key, _ = resolve_embedding_api()
         return api_key
 
@@ -310,7 +310,7 @@ class SkillRanker:
         Delegates credential / base-URL resolution to
         :func:`openspace.cloud.embedding.resolve_embedding_api`.
         """
-        from openspace.cloud.embedding import resolve_embedding_api
+        from ruflo.cloud.embedding import resolve_embedding_api
 
         resolved_key, base_url = resolve_embedding_api()
         if not api_key:

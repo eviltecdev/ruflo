@@ -6,7 +6,7 @@ except ImportError:
     from pydantic import BaseModel, Field, validator as field_validator
     PYDANTIC_V2 = False
 
-from openspace.grounding.core.types import (
+from ruflo.grounding.core.types import (
     SessionConfig, 
     SecurityPolicy,
     BackendType

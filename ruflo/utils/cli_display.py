@@ -1,6 +1,6 @@
 """CLI Display utilities for OpenSpace startup and interaction"""
 
-from openspace.tool_layer import OpenSpaceConfig
+from ruflo.tool_layer import OpenSpaceConfig
 from ruflo.utils.display import Box, BoxStyle, colorize
 
 

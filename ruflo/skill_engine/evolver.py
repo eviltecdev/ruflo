@@ -55,14 +55,14 @@ from .skill_utils import (
 )
 from .registry import write_skill_id
 from .store import SkillStore
-from openspace.prompts import SkillEnginePrompts
+from ruflo.prompts import SkillEnginePrompts
 from ruflo.utils.logging import Logger
 
 if TYPE_CHECKING:
     from .registry import SkillRegistry
     from ruflo.llm import LLMClient
-    from openspace.grounding.core.tool import BaseTool
-    from openspace.grounding.core.quality.types import ToolQualityRecord
+    from ruflo.grounding.core.tool import BaseTool
+    from ruflo.grounding.core.quality.types import ToolQualityRecord
 
 logger = Logger.get_logger(__name__)
 

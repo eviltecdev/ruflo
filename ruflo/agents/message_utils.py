@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, List, Optional, Set
 
-from openspace.prompts import GroundingAgentPrompts
+from ruflo.prompts import GroundingAgentPrompts
 from ruflo.utils.logging import Logger
 
 logger = Logger.get_logger(__name__)

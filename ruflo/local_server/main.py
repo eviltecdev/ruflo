@@ -15,7 +15,7 @@ from io import BytesIO
 import tempfile
 
 from ruflo.utils.logging import Logger
-from openspace.metrics.prometheus import (
+from ruflo.metrics.prometheus import (
     http_requests_total,
     http_request_duration_seconds,
     http_exceptions_total,
@@ -25,7 +25,7 @@ from openspace.metrics.prometheus import (
     record_request,
     normalize_endpoint,
 )
-from openspace.runtime_state import get_execute_task_active
+from ruflo.runtime_state import get_execute_task_active
 from ruflo.local_server.utils import AccessibilityHelper, ScreenshotHelper
 from ruflo.local_server.platform_adapters import get_platform_adapter
 from ruflo.local_server.health_checker import HealthChecker
@@ -290,7 +290,7 @@ def ready():
     try:
         # Stage 1: Get readiness state (safe by design)
         try:
-            from openspace.runtime_state import get_is_ready
+            from ruflo.runtime_state import get_is_ready
             is_ready = get_is_ready()
         except Exception:
             # Any import/access error → not ready
@@ -338,7 +338,7 @@ def status():
         cloud_status = 'unknown'
 
         try:
-            from openspace.runtime_state import (
+            from ruflo.runtime_state import (
                 get_openspace_initialized,
                 get_execute_task_active,
                 get_search_skills_active,

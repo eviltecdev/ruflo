@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Optional
 
 from ruflo.utils.logging import Logger
-from openspace.platforms import RecordingClient
+from ruflo.platforms import RecordingClient
 
 logger = Logger.get_logger(__name__)
 

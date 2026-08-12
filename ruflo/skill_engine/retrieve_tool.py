@@ -11,8 +11,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from openspace.grounding.core.tool.local_tool import LocalTool
-from openspace.grounding.core.types import BackendType
+from ruflo.grounding.core.tool.local_tool import LocalTool
+from ruflo.grounding.core.types import BackendType
 from ruflo.utils.logging import Logger
 
 if TYPE_CHECKING:
@@ -85,7 +85,7 @@ class RetrieveSkillTool(LocalTool):
                     logger.info(f"retrieve_skill plan: {plan}")
         else:
             # Fallback: BM25+embedding only (no LLM available)
-            from openspace.cloud.search import hybrid_search_skills
+            from ruflo.cloud.search import hybrid_search_skills
 
             results = await hybrid_search_skills(
                 query=query,

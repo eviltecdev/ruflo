@@ -59,13 +59,13 @@ class LocalGUIConnector(BaseConnector[Any]):
 
     def _get_screenshot_helper(self):
         if self._screenshot_helper is None:
-            from openspace.local_server.utils import ScreenshotHelper
+            from ruflo.local_server.utils import ScreenshotHelper
             self._screenshot_helper = ScreenshotHelper()
         return self._screenshot_helper
 
     def _get_accessibility_helper(self):
         if self._accessibility_helper is None:
-            from openspace.local_server.utils import AccessibilityHelper
+            from ruflo.local_server.utils import AccessibilityHelper
             self._accessibility_helper = AccessibilityHelper()
         return self._accessibility_helper
 

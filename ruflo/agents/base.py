@@ -9,7 +9,7 @@ from ruflo.utils.logging import Logger
 if TYPE_CHECKING:
     from ruflo.llm import LLMClient
     from ruflo.grounding.core.grounding_client import GroundingClient
-    from openspace.recording import RecordingManager
+    from ruflo.recording import RecordingManager
 
 logger = Logger.get_logger(__name__)
 

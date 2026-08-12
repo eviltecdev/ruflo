@@ -6,8 +6,8 @@ import asyncio
 import json
 from typing import Optional
 
-from openspace.http_client import create_client
-from openspace.utils.logging import Logger
+from ruflo.http_client import create_client
+from ruflo.utils.logging import Logger
 
 logger = Logger.get_logger(__name__)
 
@@ -125,8 +125,8 @@ def main():
 
 def _start_servers(args):
     """Start Ruflo servers."""
-    from openspace.local_server.main import create_local_server
-    from openspace.dashboard_server import create_dashboard_server
+    from ruflo.local_server.main import create_local_server
+    from ruflo.dashboard_server import create_dashboard_server
 
     print(f"Starting Ruflo servers (mode: {args.mode}) on {args.host}:{args.port}...")
 

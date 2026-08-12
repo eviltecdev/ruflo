@@ -14,14 +14,14 @@ from ruflo.agents.message_utils import (
 )
 from ruflo.agents.visual_analyzer import VisualAnalyzer
 from ruflo.grounding.core.types import BackendType, ToolResult
-from openspace.prompts import GroundingAgentPrompts
+from ruflo.prompts import GroundingAgentPrompts
 from ruflo.utils.logging import Logger
 
 if TYPE_CHECKING:
     from ruflo.llm import LLMClient
     from ruflo.grounding.core.grounding_client import GroundingClient
-    from openspace.recording import RecordingManager
-    from openspace.skill_engine import SkillRegistry
+    from ruflo.recording import RecordingManager
+    from ruflo.skill_engine import SkillRegistry
 
 logger = Logger.get_logger(__name__)
 
@@ -186,7 +186,7 @@ class GroundingAgent(BaseAgent):
         
         # Record retrieved tools
         if self._recording_manager:
-            from openspace.recording import RecordingManager
+            from ruflo.recording import RecordingManager
             await RecordingManager.record_retrieved_tools(
                 task_instruction=instruction,
                 tools=tools,
@@ -205,7 +205,7 @@ class GroundingAgent(BaseAgent):
         messages = self.construct_messages(context)
         
         # Record initial conversation setup once (system prompts + user instruction + tool definitions)
-        from openspace.recording import RecordingManager
+        from ruflo.recording import RecordingManager
         await RecordingManager.record_conversation_setup(
             setup_messages=copy.deepcopy(messages),
             tools=tools,
@@ -546,7 +546,7 @@ class GroundingAgent(BaseAgent):
 
         # Append retrieve_skill tool when skill registry is available
         if self._skill_registry and self._skill_registry.list_skills():
-            from openspace.skill_engine.retrieve_tool import RetrieveSkillTool
+            from ruflo.skill_engine.retrieve_tool import RetrieveSkillTool
             retrieve_llm = self._tool_retrieval_llm or self._llm_client
             retrieve_tool = RetrieveSkillTool(
                 self._skill_registry,

@@ -147,7 +147,7 @@ class TrajectoryRecorder:
     async def _capture_screenshot(self) -> Optional[bytes]:
         """Capture screenshot automatically through platforms.ScreenshotClient"""
         try:
-            from openspace.platforms import ScreenshotClient
+            from ruflo.platforms import ScreenshotClient
             
             # Lazy initialization screenshot client
             if not hasattr(self, '_screenshot_client'):

@@ -5,8 +5,8 @@ import time
 from typing import List, Sequence, Union, Dict, Optional
 from openai.types.chat import ChatCompletionToolParam
 
-from openspace.grounding.core.types import ToolSchema, ToolResult, ToolStatus
-from openspace.grounding.core.tool import BaseTool
+from ruflo.grounding.core.types import ToolSchema, ToolResult, ToolStatus
+from ruflo.grounding.core.tool import BaseTool
 from ruflo.utils.logging import Logger
 
 # .env loading is centralized in host_detection.resolver.load_runtime_env().

@@ -609,7 +609,7 @@ If the task cannot be completed, output: {"action_type": "FAIL", "reason": "expl
         
         # Check if recording is active
         try:
-            from openspace.recording.manager import RecordingManager
+            from ruflo.recording.manager import RecordingManager
             if not RecordingManager.is_recording():
                 logger.debug(f"Step {step_number}: RecordingManager not started")
                 return
