@@ -73,7 +73,7 @@ pip install pywinauto pywin32 PyGetWindow
 
 ```bash
 # Python entry point
-python -m openspace.local_server.main --host 127.0.0.1 --port 5000
+python -m ruflo.local_server.main --host 127.0.0.1 --port 5000
 
 # Or via helper script
 ./openspace/local_server/run.sh

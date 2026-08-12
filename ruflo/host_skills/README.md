@@ -8,8 +8,8 @@ This guide covers **agent-specific setup** for integrating OpenSpace. For instal
 - For **openclaw**, prefer **streamable-http** for remote HTTP transport.
 
 **Common remote endpoints:**
-- Start `openspace-mcp --transport sse --host 127.0.0.1 --port 8080` and use `http://127.0.0.1:8080/sse`
-- Start `openspace-mcp --transport streamable-http --host 127.0.0.1 --port 8081` and use `http://127.0.0.1:8081/mcp`
+- Start `ruflo-mcp --transport sse --host 127.0.0.1 --port 8080` and use `http://127.0.0.1:8080/sse`
+- Start `ruflo-mcp --transport streamable-http --host 127.0.0.1 --port 8081` and use `http://127.0.0.1:8081/mcp`
 
 The endpoint is common; the **host config syntax is not**. nanobot uses `tools.mcpServers`, while openclaw uses `openclaw mcp set`.
 
@@ -39,7 +39,7 @@ cp -r host_skills/delegate-task/ /path/to/nanobot/nanobot/skills/
   "tools": {
     "mcpServers": {
       "openspace": {
-        "command": "openspace-mcp",
+        "command": "ruflo-mcp",
         "toolTimeout": 1200,
         "env": {
           "OPENSPACE_HOST_SKILL_DIRS": "/path/to/nanobot/nanobot/skills",
@@ -105,7 +105,7 @@ cp -r host_skills/delegate-task/ /path/to/openclaw/skills/
 openclaw uses [mcporter](https://github.com/steipete/mcporter) as its MCP runtime. Register the server and pass env vars in one command:
 
 ```bash
-mcporter config add openspace --command "openspace-mcp" \
+mcporter config add openspace --command "ruflo-mcp" \
   --env OPENSPACE_HOST_SKILL_DIRS=/path/to/openclaw/skills \
   --env OPENSPACE_WORKSPACE=/path/to/OpenSpace \
   --env OPENSPACE_API_KEY=sk-xxx
@@ -154,7 +154,7 @@ Your Agent (nanobot / openclaw / ...)
   │
   │  MCP protocol (stdio | HTTP/SSE | streamable-http)
   ▼
-openspace-mcp              ← 4 tools exposed
+ruflo-mcp              ← 4 tools exposed
   ├── execute_task           ← multi-step grounding agent loop
   ├── search_skills          ← local + cloud skill search
   ├── fix_skill              ← repair a broken SKILL.md

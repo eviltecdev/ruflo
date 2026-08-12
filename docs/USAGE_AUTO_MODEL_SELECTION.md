@@ -21,7 +21,7 @@ When `auto_select_model=True` is passed to `complete()`, the LLMClient will:
 ### Basic Example
 
 ```python
-from openspace.llm.client import LLMClient
+from ruflo.llm.client import LLMClient
 
 client = LLMClient()
 

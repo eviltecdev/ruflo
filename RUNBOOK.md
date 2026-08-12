@@ -18,7 +18,7 @@ This runbook explains how to start, verify, monitor, and safely shut down the Op
 
 ```bash
 # Terminal 1: Start OpenSpace
-python3 -m openspace.mcp_server
+python3 -m ruflo.mcp_server
 
 # Expected output:
 # INFO — Server initialized, listening on stdio
@@ -189,7 +189,7 @@ T+30+ms: Exit with code 0
 
 ```bash
 # Terminal 1: Start server
-python3 -m openspace.mcp_server &
+python3 -m ruflo.mcp_server &
 PID=$!
 
 # Terminal 2: Verify ready
@@ -258,7 +258,7 @@ export OPENAI_API_KEY=sk-...
 export ANTHROPIC_API_KEY=sk-ant-...
 
 # 4. Logs
-python3 -m openspace.mcp_server 2>&1 | head -100
+python3 -m ruflo.mcp_server 2>&1 | head -100
 ```
 
 ### /ready Stuck on 503
@@ -278,7 +278,7 @@ strace -p $PID -e trace=network 2>&1 | head -20
 # 3. Restart manually
 kill -9 $PID
 sleep 2
-python3 -m openspace.mcp_server  # Start fresh
+python3 -m ruflo.mcp_server  # Start fresh
 ```
 
 ### Limiter Saturation
@@ -303,7 +303,7 @@ kill -TERM $PID
 # Wait 30s for graceful shutdown
 sleep 35
 # Restart
-python3 -m openspace.mcp_server
+python3 -m ruflo.mcp_server
 ```
 
 ### Cloud Status Degraded
@@ -466,7 +466,7 @@ RUN pip install -e .
 HEALTHCHECK --interval=10s --timeout=1s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:5000/health || exit 1
 
-CMD ["python3", "-m", "openspace.mcp_server"]
+CMD ["python3", "-m", "ruflo.mcp_server"]
 ```
 
 ```bash

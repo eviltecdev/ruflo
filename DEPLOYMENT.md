@@ -114,9 +114,9 @@ result = agent.execute(task="Your task")
 ### Old Pattern (Still Works)
 ```python
 # This still works due to backward-compatibility compat-shims
-from openspace.tool_layer import OpenSpace
-from openspace.agents import GroundingAgent
-from openspace.llm import LLMClient
+from ruflo.tool_layer import OpenSpace
+from ruflo.agents import GroundingAgent
+from ruflo.llm import LLMClient
 
 # Same behavior as new pattern
 agent = OpenSpace()
@@ -274,7 +274,7 @@ git checkout HEAD~3  # Or specific commit
 pip install -e .
 
 # Use old CLI
-openspace-mcp --help
+ruflo-mcp --help
 ```
 
 **Note:** All code is still in repository. Backward-compat compat-shims ensure zero breaking changes during transition.

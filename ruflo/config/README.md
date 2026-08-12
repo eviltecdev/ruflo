@@ -145,7 +145,7 @@ Start the gateway with either entrypoint:
 
 ```bash
 openspace communication run --config openspace/config/config_communication.json
-openspace-gateway --config openspace/config/config_communication.json
+ruflo-gateway --config openspace/config/config_communication.json
 ```
 
 Check health:

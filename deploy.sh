@@ -177,11 +177,11 @@ echo -e "${BOLD}Python:${NC} $PYTHON_VERSION"
 # =========================
 section "5. Syntax-Check"
 
-if [ -d "openspace" ]; then
-  python -m compileall -q openspace
+if [ -d "ruflo" ]; then
+  python -m compileall -q ruflo
   success "Python Syntax-Check erfolgreich"
 else
-  warn "Ordner 'openspace' nicht gefunden -> Syntax-Check übersprungen"
+  warn "Ordner 'ruflo' nicht gefunden -> Syntax-Check übersprungen"
 fi
 
 # =========================
