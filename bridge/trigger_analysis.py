@@ -32,13 +32,13 @@ async def run_analysis(task_id: str, recording_dir: str) -> None:
         # Ensure OpenSpace is importable
         sys.path.insert(0, str(OPENSPACE_DIR))
 
-        from openspace.host_detection import load_runtime_env, build_llm_kwargs
+        from ruflo.host_detection import load_runtime_env, build_llm_kwargs
         load_runtime_env()
 
-        from openspace.llm.client import LLMClient
-        from openspace.skill_engine.store import SkillStore
-        from openspace.skill_engine.analyzer import ExecutionAnalyzer
-        from openspace.utils.logging import Logger
+        from ruflo.llm.client import LLMClient
+        from ruflo.skill_engine.store import SkillStore
+        from ruflo.skill_engine.analyzer import ExecutionAnalyzer
+        from ruflo.utils.logging import Logger
 
         Logger.set_level("ERROR")  # Silent in background
 
@@ -53,7 +53,7 @@ async def run_analysis(task_id: str, recording_dir: str) -> None:
 
         llm_client = LLMClient(model=model_str, timeout=60.0, max_retries=2)
 
-        db_path = OPENSPACE_DIR / ".openspace" / "openspace.db"
+        db_path = OPENSPACE_DIR / ".openspace" / "ruflo.db"
         store = SkillStore(str(db_path))
 
         analyzer = ExecutionAnalyzer(

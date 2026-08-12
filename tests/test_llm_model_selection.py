@@ -1,7 +1,7 @@
 """Tests for LLMClient auto-model-selection."""
 
 import pytest
-from openspace.llm.client import LLMClient
+from ruflo.llm.client import LLMClient
 
 
 class TestModelAutoSelect:

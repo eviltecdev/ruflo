@@ -161,9 +161,9 @@ async def create_skill_for_pattern(
     # LLM generiert den Skill-Inhalt
     try:
         sys.path.insert(0, str(OPENSPACE_DIR))
-        from openspace.host_detection import load_runtime_env
+        from ruflo.host_detection import load_runtime_env
         load_runtime_env()
-        from openspace.llm.client import LLMClient
+        from ruflo.llm.client import LLMClient
 
         llm = LLMClient(model=ANALYSIS_MODEL, timeout=30.0, max_retries=1)
 
