@@ -20,4 +20,4 @@ fi
 # Set PYTHONPATH and start server
 export PYTHONPATH="$PROJECT_ROOT:$PYTHONPATH"
 cd "$PROJECT_ROOT"
-python3 -m openspace.local_server.main
+python3 -m ruflo.local_server.main
