@@ -5,7 +5,7 @@
 
 All OpenSpace modules have been consolidated into **Ruflo** as the primary interface. The unified monolith provides:
 
-- **ruflo.core.engine** — Main OpenSpace execution engine
+- **ruflo.core.engine** — Main Ruflo execution engine
 - **ruflo.agents** — Reasoning loop (GroundingAgent, message management)
 - **ruflo.grounding** — Tool execution backends (MCP, Shell, GUI)
 - **ruflo.skill_engine** — Skill lifecycle (store, registry, evolution)
